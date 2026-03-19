@@ -116,3 +116,57 @@ def train_model(model,train_loader,epochs=3):
             running_loss+=loss.item()
         print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}')
 ```
+
+## Exp 04: 
+
+```python
+from torchvision.models.vgg import VGG19_Weights
+model=models.vgg19(weights=VGG19_Weights.DEFAULT)
+
+model.classifier[-1]=nn.Linear(model.classifier[-1].in_features,1)
+
+criterion=nn.BCEWithLogitsLoss()
+optimizer=optim.Adam(model.parameters(), lr=0.001)
+
+def train_model(model, train_loader,test_loader,num_epochs=100):
+  train_losses=[]
+  val_losses=[]
+  model.train()
+  for epoch in range(num_epochs):
+    running_loss = 0.0
+    for images, labels in train_loader:
+        images, labels = images.to(device), labels.to(device)
+        optimizer.zero_grad()
+        outputs = model(images)
+        loss=criterion(outputs,labels.unsqueeze(1).float())
+        loss.backward()
+        optimizer.step()
+        running_loss += loss.item()
+    train_losses.append(running_loss/len(train_loader))
+
+    model.eval()
+    val_loss=0.0
+    with torch.no_grad():
+      for images, labels in train_loader:
+        images, labels = images.to(device), labels.to(device)
+        outputs = model(images)
+        loss=criterion(outputs,labels.unsqueeze(1).float())
+        val_loss+=loss.item()
+    val_losses.append(val_loss/len(test_loader))
+    model.train()
+
+    print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_losses[-1]:.4f}, Validation Loss: {val_losses[-1]:.4f}')
+
+  plt.figure(figsize=(8, 6))
+  plt.plot(range(1, num_epochs + 1), train_losses, label='Train Loss', marker='o')
+  plt.plot(range(1, num_epochs + 1), val_losses, label='Validation Loss', marker='s')
+  plt.xlabel('Epochs')
+  plt.ylabel('Loss')
+  plt.title('Training and Validation Loss')
+  plt.legend()
+  plt.show()
+
+train_model(model, train_loader,test_loader)
+        
+        
+```
