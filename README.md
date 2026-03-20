@@ -138,7 +138,7 @@ def train_model(model, train_loader,test_loader,num_epochs=100):
         images, labels = images.to(device), labels.to(device)
         optimizer.zero_grad()
         outputs = model(images)
-        loss=criterion(outputs,labels.unsqueeze(1).float())
+        loss=criterion(outputs,labels)
         loss.backward()
         optimizer.step()
         running_loss += loss.item()
@@ -147,10 +147,10 @@ def train_model(model, train_loader,test_loader,num_epochs=100):
     model.eval()
     val_loss=0.0
     with torch.no_grad():
-      for images, labels in train_loader:
+      for images, labels in test_loader:
         images, labels = images.to(device), labels.to(device)
         outputs = model(images)
-        loss=criterion(outputs,labels.unsqueeze(1).float())
+        loss=criterion(outputs,labels)
         val_loss+=loss.item()
     val_losses.append(val_loss/len(test_loader))
     model.train()
